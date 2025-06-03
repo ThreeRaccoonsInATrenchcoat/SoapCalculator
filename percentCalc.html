@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<!--EXTERNAL CSS-->
+<link rel="stylesheet" href="styles.css">
+<html lang="en">
+    <body>
+        <div class="container">
+            <h1>🧼 Soap Ingredient Calculator</h1>
+            
+            <div class="input-section">
+                <div class="input-group">
+                    <div>
+                        <label for="ingredient-name">Ingredient Name</label>
+                        <input type="text" id="ingredient-name" placeholder="e.g., Coconut Oil, Lye, Shea Butter">
+                    </div>
+                    <div>
+                        <label for="batch-size">Total Batch Size (grams)</label>
+                        <input type="number" id="batch-size" placeholder="e.g., 1000" min="1">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div>
+                        <label for="percentage">Percentage (%)</label>
+                        <input type="number" id="percentage" placeholder="e.g., 25" min="0" max="100" step="0.1">
+                    </div>
+                    <div style="display: flex; align-items: end;">
+                        <button class="btn" onclick="addIngredient()">Add Ingredient</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ingredients-list">
+                <h2 style="margin-bottom: 20px; color: #4a5568;">Recipe Ingredients</h2>
+                <div id="ingredients-container">
+                    <div class="empty-state">
+                        No ingredients added yet. Start by adding your first ingredient above!
+                    </div>
+                </div>
+                
+                <div id="total-section" class="total-section" style="display: none;">
+                    <div class="total-amount" id="total-amount">0g</div>
+                    <div>Total Recipe Weight</div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let ingredients = [];
+            let ingredientCounter = 0;
+
+            function addIngredient() {
+                const name = document.getElementById('ingredient-name').value.trim();
+                const batchSize = parseFloat(document.getElementById('batch-size').value);
+                const percentage = parseFloat(document.getElementById('percentage').value);
+
+                if (!name || !batchSize || percentage === '' || percentage < 0 || percentage > 100) {
+                    alert('Please fill in all fields with valid values. Percentage must be between 0-100.');
+                    return;
+                }
+
+                const amount = (batchSize * percentage) / 100;
+                
+                const ingredient = {
+                    id: ingredientCounter++,
+                    name: name,
+                    batchSize: batchSize,
+                    percentage: percentage,
+                    amount: amount
+                };
+
+                ingredients.push(ingredient);
+                updateDisplay();
+                clearInputs();
+            }
+
+            function removeIngredient(id) {
+                ingredients = ingredients.filter(ingredient => ingredient.id !== id);
+                updateDisplay();
+            }
+
+            function updateDisplay() {
+                const container = document.getElementById('ingredients-container');
+                const totalSection = document.getElementById('total-section');
+                
+                if (ingredients.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No ingredients added yet. Start by adding your first ingredient above!</div>';
+                    totalSection.style.display = 'none';
+                    return;
+                }
+
+                let html = '';
+                let total = 0;
+
+                ingredients.forEach(ingredient => {
+                    total += ingredient.amount;
+                    html += `
+                        <div class="ingredient-item">
+                            <div class="ingredient-info">
+                                <div class="ingredient-name">${ingredient.name}</div>
+                                <div class="ingredient-details">
+                                    ${ingredient.percentage}% of ${ingredient.batchSize}g batch
+                                </div>
+                            </div>
+                            <div class="ingredient-amount">${ingredient.amount.toFixed(1)}g</div>
+                            <button class="remove-btn" onclick="removeIngredient(${ingredient.id})">×</button>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+                document.getElementById('total-amount').textContent = total.toFixed(1) + 'g';
+                totalSection.style.display = 'block';
+            }
+
+            function clearInputs() {
+                document.getElementById('ingredient-name').value = '';
+                document.getElementById('batch-size').value = '';
+                document.getElementById('percentage').value = '';
+                document.getElementById('ingredient-name').focus();
+            }
+
+            // Add Enter key support
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addIngredient();
+                }
+            });
+
+            // Focus on first input when page loads
+            document.getElementById('ingredient-name').focus();
+        </script>
+    </body>
+</html>
